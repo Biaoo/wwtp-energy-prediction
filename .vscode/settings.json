@@ -1,0 +1,28 @@
+{
+  "python.defaultInterpreterPath": ".venv/bin/python",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.indexing": true,
+  "python.analysis.ignore": [
+    "**.venv/**"
+  ],
+  "markdownlint.config": {
+    "MD022": false,
+    "MD032": false,
+    "MD036": false,
+    "MD040": false,
+    "MD041": false,
+    "MD047": false
+  },
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/.venv/**": true,
+    "**/__pycache__/**": true
+  },
+  "files.exclude": {
+    "**/__pycache__/**": true
+  },
+}
