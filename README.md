@@ -274,12 +274,6 @@ Please use the [GitHub Issues](https://github.com/Biaoo/wwtp-energy-prediction/i
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-
-- Funding: [Grant/Foundation Name]
-- Data providers: Participating WWTPs in the Yangtze River Delta region
-- Computational resources: [Institution/Facility Name]
-
 ## Contact
 
 For questions about the code or collaboration opportunities:
