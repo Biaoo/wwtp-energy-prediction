@@ -1,0 +1,10 @@
+,annual_electricity_consumption_kwh,annual_electricity_consumption_kwh,annual_electricity_consumption_kwh,annual_electricity_consumption_kwh,annual_electricity_consumption_kwh
+,count,mean,std,min,max
+treatment_process,,,,,
+A2O_Family,54,15840004.36,18014999.02,576974.0,78633240.0
+AO_Family,9,6878757.56,12181526.02,358110.0,38358948.0
+Biofilm,2,13853515.0,10135505.97,6686630.0,21020400.0
+MBR,2,17355070.5,20770385.59,2668190.0,32041951.0
+Other,3,34982666.33,45575862.58,7733500.0,87597908.0
+Oxidation_Ditch,15,6319879.6,5178781.13,727628.0,14712579.0
+SBR_Family,6,2789755.83,1497733.13,715190.0,5300805.0

@@ -21,3 +21,17 @@ CLAUDE.md
 docs/private/
 
 .DS_Store
+
+## output data
+
+data/outputs/evaluation/*.md
+data/outputs/evaluation/*.png
+data/outputs/evaluation/*.pkl
+
+data/outputs/analysis/*.md
+data/outputs/analysis/*.png
+data/outputs/analysis/*.pkl
+
+data/outputs/models/*.md
+data/outputs/models/*.png
+data/outputs/models/*.pkl
