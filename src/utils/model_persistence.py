@@ -6,7 +6,7 @@ import json
 import pickle
 from pathlib import Path
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ class ModelPersistence:
     @staticmethod
     def save_model(model: Any, 
                   filepath: Path,
-                  metadata: Dict = None,
+                  metadata: Optional[Dict] = None,
                   save_format: str = 'joblib'):
         """
         Save model
