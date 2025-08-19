@@ -1,4 +1,4 @@
-# Energy Consumption Prediction in Wastewater Treatment Plants: A Machine Learning Approach
+# Machine Learning Framework for Energy Consumption Prediction in Wastewater Treatment Plants
 
 ## Methods
 
