@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![DOI](https://img.shields.io/badge/DOI-10.1234%2Fexample-blue)](https://doi.org/10.1234/example)
+<!-- [![DOI](https://img.shields.io/badge/DOI-10.1234%2Fexample-blue)](https://doi.org/10.1234/example) -->
 [![Dataset](https://img.shields.io/badge/Dataset-Available-brightgreen)](data/)
 [![Models](https://img.shields.io/badge/Models-Pretrained-orange)](data/outputs/models/)
 
