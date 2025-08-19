@@ -1,164 +1,126 @@
-# 污水处理厂能耗预测模型
+# Wastewater Treatment Plant Energy Consumption Prediction Model
 
-基于机器学习的污水处理厂年度电力消耗预测系统。
+Machine learning-based annual electricity consumption prediction system for wastewater treatment plants.
 
-## 项目简介
+## Project Overview
 
-本项目使用多种机器学习算法对污水处理厂的年度能耗进行预测，基于处理规模、水质指标、处理工艺等特征构建预测模型。
+This project uses various machine learning algorithms to predict annual energy consumption of wastewater treatment plants, building prediction models based on features such as treatment capacity, water quality indicators, and treatment processes.
 
-## 快速开始
+## Quick Start
 
-### 环境要求
+### Requirements
 
 - Python 3.10+
-- UV (Python 包管理器)
+- UV (Python package manager)
 
-### 安装
+### Installation
 
 ```bash
-# 克隆项目
-git clone https://github.com/Biaoo/wwt-prediction.git
-cd wwt-prediction
+# Clone the repository
+git clone https://github.com/Biaoo/wwtp-energy-prediction.git
+cd wwtp-energy-prediction
 
-# 使用UV安装依赖
+# Install dependencies using UV
 uv sync
 ```
 
-### 使用方法
+### Usage
 
-项目提供三个主要命令：
+The project provides three main commands:
 
-#### 1. 数据分析
+#### 1. Data Analysis
 
 ```bash
 uv run python src/data_analysis.py
 ```
 
-- 加载和清洗数据
-- 特征工程
-- 探索性数据分析（EDA）
-- 生成可视化图表
-- 输出位置：`data/outputs/analysis/`
+- Load and clean data
+- Feature engineering
+- Exploratory Data Analysis (EDA)
+- Generate visualization charts
+- Output location: `data/outputs/analysis/`
 
-#### 2. 模型训练
+#### 2. Model Training
 
 ```bash
 uv run python src/model_train.py
 ```
 
-- 训练多个机器学习模型
-- 自动进行超参数调优
-- 模型对比和选择
-- 保存最佳模型
-- 输出位置：`data/outputs/models/`
+- Train multiple machine learning models
+- Automatic hyperparameter tuning
+- Model comparison and selection
+- Save best model
+- Output location: `data/outputs/models/`
 
-#### 3. 模型评估
+#### 3. Model Evaluation
 
 ```bash
 uv run python src/evaluate.py
 ```
 
-- 加载训练好的模型
-- 在测试集上评估
-- 生成详细的评估报告
-- 误差分析和可视化
-- 输出位置：`data/outputs/evaluation/`
+- Load trained models
+- Evaluate on test set
+- Generate detailed evaluation reports
+- Error analysis and visualization
+- Output location: `data/outputs/evaluation/`
 
-## 项目结构
+## Project Structure
 
 ```
 wwt-prediction/
 ├── data/
-│   ├── wwtp_data_final.csv     # 原始数据
-│   └── outputs/                 # 输出目录
-│       ├── analysis/            # 数据分析结果
-│       ├── models/              # 训练的模型
-│       └── evaluation/          # 评估结果
+│   ├── wwtp_data_final.csv     # Raw data
+│   └── outputs/                 # Output directory
+│       ├── analysis/            # Data analysis results
+│       ├── models/              # Trained models
+│       └── evaluation/          # Evaluation results
 ├── src/
-│   ├── config.py                # 配置文件
-│   ├── data_analysis.py         # 数据分析脚本
-│   ├── model_train.py           # 模型训练脚本
-│   ├── evaluate.py              # 评估脚本
-│   ├── data/                    # 数据处理模块
-│   ├── features/                # 特征工程模块
-│   ├── models/                  # 模型训练模块
-│   ├── evaluation/              # 评估模块
-│   ├── visualization/           # 可视化模块
-│   └── utils/                   # 工具模块
+│   ├── config.py                # Configuration file
+│   ├── data_analysis.py         # Data analysis script
+│   ├── model_train.py           # Model training script
+│   ├── evaluate.py              # Evaluation script
+│   ├── data/                    # Data processing module
+│   ├── features/                # Feature engineering module
+│   ├── models/                  # Model training module
+│   ├── evaluation/              # Evaluation module
+│   ├── visualization/           # Visualization module
+│   └── utils/                   # Utility module
 └── docs/
     └── private/
-        └── init.md              # 项目设计文档
+        └── init.md              # Project design document
 ```
 
-## 主要特性
+## Key Features
 
-### 数据处理
+### Data Processing
 
-- 自动处理缺失值和异常值
-- 移除地理位置特征（避免过拟合）
-- 处理特殊值（如检测限）
+- Automatic handling of missing values and outliers
+- Remove geographical features (to avoid overfitting)
+- Handle special values (such as detection limits)
 
-### 特征工程
+### Feature Engineering
 
-- 衍生特征：负荷率、去除率、污染物负荷等
-- 类别特征编码（One-Hot、标签编码）
-- 特征缩放和归一化
+- Derived features: load rate, removal rate, pollutant load, etc.
+- Categorical feature encoding (One-Hot, Label encoding)
+- Feature scaling and normalization
 
-### 模型支持
+### Supported Models
 
-- **基准模型**：线性回归、Ridge、Lasso、ElasticNet
-- **树模型**：随机森林、XGBoost、LightGBM
-- **集成方法**：模型融合和 Stacking
+- **Baseline Models**: Linear Regression, Ridge, Lasso, ElasticNet
+- **Tree Models**: Random Forest, XGBoost, LightGBM
+- **Ensemble Methods**: Model fusion and Stacking
 
-### 评估指标
+### Evaluation Metrics
 
-- MAE（平均绝对误差）
-- RMSE（均方根误差）
-- R²（决定系数）
-- MAPE（平均绝对百分比误差）
+- MAE (Mean Absolute Error)
+- RMSE (Root Mean Square Error)
+- R² (Coefficient of Determination)
+- MAPE (Mean Absolute Percentage Error)
 
-## 输出文件说明
+## Contributing
 
-### 数据分析输出
+Issues and Pull Requests are welcome.
 
-- `processed_data.csv` - 处理后的数据
-- `correlation_matrix.png/csv` - 相关性矩阵
-- `target_correlations.png/csv` - 目标变量相关性
-- `data_distributions.png` - 数据分布图
-- `feature_statistics.csv` - 特征统计
-
-### 模型训练输出
-
-- `best_model.pkl` - 最佳模型
-- `scaler.pkl` - 特征缩放器
-- `model_config.json` - 模型配置
-- `training_results.json` - 训练结果
-- `model_comparison.png/csv` - 模型对比
-
-### 评估输出
-
-- `evaluation_report.md` - Markdown 格式报告
-- `final_evaluation_report.json` - 详细评估结果
-- `error_analysis.json` - 误差分析
-- `segment_evaluation.csv` - 分段评估
-
-## 性能指标
-
-目标性能：
-
-- R² > 0.85
-- MAPE < 15%
-
-## 注意事项
-
-1. 数据集规模较小（93 条），建议使用交叉验证
-2. macOS 用户需要安装 OpenMP 支持 XGBoost
-3. 所有输出都包含对应的 CSV 文件，便于二次分析
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request。
-
-## 许可证
+## License
 
 MIT License

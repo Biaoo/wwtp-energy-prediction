@@ -1,5 +1,5 @@
 """
-评估指标计算模块
+Evaluation Metrics Calculation Module
 """
 import numpy as np
 import pandas as pd
@@ -18,56 +18,56 @@ import logging
 logger = logging.getLogger(__name__)
 
 class MetricsCalculator:
-    """评估指标计算器"""
+    """Evaluation Metrics Calculator"""
     
     @staticmethod
     def calculate_regression_metrics(y_true: np.ndarray, 
                                     y_pred: np.ndarray,
                                     sample_weight: Optional[np.ndarray] = None) -> Dict:
         """
-        计算回归模型的各种评估指标
+        Calculate various evaluation metrics for regression models
         
         Args:
-            y_true: 真实值
-            y_pred: 预测值
-            sample_weight: 样本权重
+            y_true: True values
+            y_pred: Predicted values
+            sample_weight: Sample weights
             
         Returns:
-            Dict: 包含各种指标的字典
+            Dict: Dictionary containing various metrics
         """
         metrics = {}
         
-        # 基础指标
+        # Basic metrics
         metrics['mae'] = mean_absolute_error(y_true, y_pred, sample_weight=sample_weight)
         metrics['mse'] = mean_squared_error(y_true, y_pred, sample_weight=sample_weight)
         metrics['rmse'] = np.sqrt(metrics['mse'])
         metrics['r2'] = r2_score(y_true, y_pred, sample_weight=sample_weight)
         
-        # MAPE (处理零值)
+        # MAPE (handle zero values)
         mask = y_true != 0
         if mask.any():
             metrics['mape'] = np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
         else:
             metrics['mape'] = np.inf
             
-        # 使用sklearn的MAPE（如果可用）
+        # Use sklearn's MAPE (if available)
         try:
             metrics['sklearn_mape'] = mean_absolute_percentage_error(y_true, y_pred) * 100
         except:
             metrics['sklearn_mape'] = metrics['mape']
         
-        # 额外指标
+        # Additional metrics
         metrics['explained_variance'] = explained_variance_score(y_true, y_pred, sample_weight=sample_weight)
         metrics['max_error'] = max_error(y_true, y_pred)
         
-        # 误差统计
+        # Error statistics
         errors = y_true - y_pred
         metrics['mean_error'] = np.mean(errors)
         metrics['std_error'] = np.std(errors)
         metrics['median_error'] = np.median(errors)
         metrics['median_absolute_error'] = np.median(np.abs(errors))
         
-        # 分位数
+        # Percentiles
         metrics['q25_error'] = np.percentile(np.abs(errors), 25)
         metrics['q75_error'] = np.percentile(np.abs(errors), 75)
         metrics['q95_error'] = np.percentile(np.abs(errors), 95)
@@ -79,17 +79,17 @@ class MetricsCalculator:
                                     y_pred: np.ndarray,
                                     n_segments: int = 4) -> pd.DataFrame:
         """
-        按数值段计算评估指标
+        Calculate evaluation metrics by value segments
         
         Args:
-            y_true: 真实值
-            y_pred: 预测值
-            n_segments: 分段数量
+            y_true: True values
+            y_pred: Predicted values
+            n_segments: Number of segments
             
         Returns:
-            pd.DataFrame: 分段评估结果
+            pd.DataFrame: Segmented evaluation results
         """
-        # 创建分段
+        # Create segments
         percentiles = np.linspace(0, 100, n_segments + 1)
         bins = np.percentile(y_true, percentiles)
         
@@ -117,14 +117,14 @@ class MetricsCalculator:
     def calculate_residual_diagnostics(y_true: np.ndarray,
                                       y_pred: np.ndarray) -> Dict:
         """
-        计算残差诊断指标
+        Calculate residual diagnostic metrics
         
         Args:
-            y_true: 真实值
-            y_pred: 预测值
+            y_true: True values
+            y_pred: Predicted values
             
         Returns:
-            Dict: 残差诊断结果
+            Dict: Residual diagnostic results
         """
         residuals = y_true - y_pred
         
@@ -149,31 +149,31 @@ class MetricsCalculator:
     def format_metrics_report(metrics: Dict, 
                              model_name: str = "Model") -> str:
         """
-        格式化评估指标报告
+        Format evaluation metrics report
         
         Args:
-            metrics: 指标字典
-            model_name: 模型名称
+            metrics: Metrics dictionary
+            model_name: Model name
             
         Returns:
-            str: 格式化的报告
+            str: Formatted report
         """
         report = f"\n{'='*50}\n"
-        report += f"{model_name} 评估报告\n"
+        report += f"{model_name} Evaluation Report\n"
         report += f"{'='*50}\n\n"
         
-        report += "主要指标:\n"
+        report += "Main Metrics:\n"
         report += f"  MAE:  {metrics.get('mae', 0):.4f}\n"
         report += f"  RMSE: {metrics.get('rmse', 0):.4f}\n"
         report += f"  R²:   {metrics.get('r2', 0):.4f}\n"
         report += f"  MAPE: {metrics.get('mape', 0):.2f}%\n"
         
-        report += "\n误差分布:\n"
-        report += f"  平均误差:   {metrics.get('mean_error', 0):.4f}\n"
-        report += f"  误差标准差: {metrics.get('std_error', 0):.4f}\n"
-        report += f"  中位数误差: {metrics.get('median_error', 0):.4f}\n"
+        report += "\nError Distribution:\n"
+        report += f"  Mean Error:     {metrics.get('mean_error', 0):.4f}\n"
+        report += f"  Error Std Dev:  {metrics.get('std_error', 0):.4f}\n"
+        report += f"  Median Error:   {metrics.get('median_error', 0):.4f}\n"
         
-        report += "\n误差分位数:\n"
+        report += "\nError Percentiles:\n"
         report += f"  25%: {metrics.get('q25_error', 0):.4f}\n"
         report += f"  75%: {metrics.get('q75_error', 0):.4f}\n"
         report += f"  95%: {metrics.get('q95_error', 0):.4f}\n"

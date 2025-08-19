@@ -1,5 +1,5 @@
 """
-数据加载模块
+Data Loading Module
 """
 import pandas as pd
 import numpy as np
@@ -10,42 +10,42 @@ from typing import Optional, Tuple, cast
 logger = logging.getLogger(__name__)
 
 class DataLoader:
-    """数据加载器"""
+    """Data Loader"""
     
     def __init__(self, data_path: Path):
         """
-        初始化数据加载器
+        Initialize data loader
         
         Args:
-            data_path: 数据文件路径
+            data_path: Path to data file
         """
         self.data_path = data_path
         self.data = None
         
     def load_data(self) -> pd.DataFrame:
         """
-        加载数据
+        Load data
         
         Returns:
-            pd.DataFrame: 加载的数据
+            pd.DataFrame: Loaded data
         """
         try:
             self.data = pd.read_csv(self.data_path)
-            logger.info(f"成功加载数据: {self.data.shape[0]} 行, {self.data.shape[1]} 列")
+            logger.info(f"Successfully loaded data: {self.data.shape[0]} rows, {self.data.shape[1]} columns")
             return self.data
         except Exception as e:
-            logger.error(f"加载数据失败: {e}")
+            logger.error(f"Failed to load data: {e}")
             raise
             
     def validate_columns(self, required_columns: list) -> bool:
         """
-        验证必要的列是否存在
+        Validate if required columns exist
         
         Args:
-            required_columns: 必需的列名列表
+            required_columns: List of required column names
             
         Returns:
-            bool: 是否包含所有必需列
+            bool: Whether all required columns are present
         """
         if self.data is None:
             self.load_data()
@@ -54,16 +54,16 @@ class DataLoader:
             
         missing_columns = set(required_columns) - set(self.data.columns)
         if missing_columns:
-            logger.warning(f"缺少以下列: {missing_columns}")
+            logger.warning(f"Missing columns: {missing_columns}")
             return False
         return True
         
     def get_data_info(self) -> dict:
         """
-        获取数据基本信息
+        Get basic data information
         
         Returns:
-            dict: 数据信息
+            dict: Data information
         """
         if self.data is None:
             self.load_data()
@@ -84,10 +84,10 @@ class DataLoader:
         
     def get_basic_statistics(self) -> pd.DataFrame:
         """
-        获取数值型特征的基本统计信息
+        Get basic statistics for numeric features
         
         Returns:
-            pd.DataFrame: 统计信息
+            pd.DataFrame: Statistical information
         """
         if self.data is None:
             self.load_data()

@@ -1,5 +1,5 @@
 """
-可视化模块
+Visualization Module
 """
 import pandas as pd
 import numpy as np
@@ -11,32 +11,32 @@ from typing import Dict, List, Optional, Tuple
 import warnings
 warnings.filterwarnings('ignore')
 
-# 设置中文字体
+# Set Chinese font
 plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 
 logger = logging.getLogger(__name__)
 
 class Visualizer:
-    """可视化器"""
+    """Visualizer"""
     
     def __init__(self, output_dir: Path):
         """
-        初始化可视化器
+        Initialize visualizer
         
         Args:
-            output_dir: 输出目录
+            output_dir: Output directory
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
     def plot_data_distribution(self, data: pd.DataFrame, numeric_cols: List[str]):
         """
-        绘制数据分布图
+        Plot data distribution
         
         Args:
-            data: 数据
-            numeric_cols: 数值列
+            data: Data
+            numeric_cols: Numeric columns
         """
         n_cols = min(4, len(numeric_cols))
         n_rows = (len(numeric_cols) - 1) // n_cols + 1
@@ -51,7 +51,7 @@ class Visualizer:
                 axes[idx].set_xlabel(col)
                 axes[idx].set_ylabel('Frequency')
                 
-        # 隐藏多余的子图
+        # Hide extra subplots
         for idx in range(len(numeric_cols), len(axes)):
             axes[idx].set_visible(False)
             
@@ -67,16 +67,16 @@ class Visualizer:
         csv_path = self.output_dir / 'data_distributions_stats.csv'
         stats_df.to_csv(csv_path)
         
-        logger.info(f"数据分布图已保存至: {fig_path}")
-        logger.info(f"统计数据已保存至: {csv_path}")
+        logger.info(f"Data distribution plot saved to: {fig_path}")
+        logger.info(f"Statistical data saved to: {csv_path}")
         
     def plot_correlation_matrix(self, data: pd.DataFrame, figsize: Tuple = (12, 10)):
         """
-        绘制相关性矩阵
+        Plot correlation matrix
         
         Args:
-            data: 数据
-            figsize: 图片大小
+            data: Data
+            figsize: Figure size
         """
         # 计算相关性矩阵
         numeric_data = data.select_dtypes(include=[np.number])

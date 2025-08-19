@@ -1,5 +1,5 @@
 """
-特征工程模块
+Feature Engineering Module
 """
 import pandas as pd
 import numpy as np
@@ -10,14 +10,14 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, On
 logger = logging.getLogger(__name__)
 
 class FeatureEngineer:
-    """特征工程器"""
+    """Feature Engineer"""
     
     def __init__(self, data: pd.DataFrame):
         """
-        初始化特征工程器
+        Initialize feature engineer
         
         Args:
-            data: 输入数据
+            data: Input data
         """
         self.data = data.copy()
         self.scalers = {}
@@ -25,34 +25,34 @@ class FeatureEngineer:
         
     def create_derived_features(self) -> pd.DataFrame:
         """
-        创建衍生特征
+        Create derived features
         
         Returns:
-            pd.DataFrame: 包含新特征的数据
+            pd.DataFrame: Data with new features
         """
-        logger.info("创建衍生特征...")
+        logger.info("Creating derived features...")
         
-        # 1. 负荷率
+        # 1. Load rate
         if 'annual_treatment_volume_10k_m3' in self.data.columns and \
            'treatment_capacity_10k_m3_per_day' in self.data.columns:
             self.data['load_rate'] = self.data['annual_treatment_volume_10k_m3'] / \
                                      (self.data['treatment_capacity_10k_m3_per_day'] * 365)
-            # 处理无穷大和NaN
+            # Handle infinity and NaN values
             self.data['load_rate'] = self.data['load_rate'].replace([np.inf, -np.inf], np.nan)
             self.data['load_rate'] = self.data['load_rate'].fillna(0)
             
-        # 2. 污染物去除量
+        # 2. Pollutant removal amounts
         pollutants = ['cod', 'bod5', 'ss', 'nh3n', 'tn', 'tp']
         for pollutant in pollutants:
             influent_col = f'{pollutant}_influent_mg_l'
             effluent_col = f'{pollutant}_effluent_mg_l'
             
             if influent_col in self.data.columns and effluent_col in self.data.columns:
-                # 去除量
+                # Removal amount
                 removal_col = f'{pollutant}_removal_mg_l'
                 self.data[removal_col] = self.data[influent_col] - self.data[effluent_col]
                 
-                # 去除率
+                # Removal rate
                 removal_rate_col = f'{pollutant}_removal_rate'
                 self.data[removal_rate_col] = np.where(
                     self.data[influent_col] > 0,
@@ -60,17 +60,17 @@ class FeatureEngineer:
                     0
                 )
                 
-        # 3. 污染物负荷（考虑处理量）
+        # 3. Pollutant loads (considering treatment volume)
         if 'annual_treatment_volume_10k_m3' in self.data.columns:
             for pollutant in ['cod', 'tn', 'tp']:
                 influent_col = f'{pollutant}_influent_mg_l'
                 if influent_col in self.data.columns:
                     load_col = f'{pollutant}_load_kg'
-                    # 转换单位：mg/L * 10k m³ * 10 = kg
+                    # Unit conversion: mg/L * 10k m³ * 10 = kg
                     self.data[load_col] = self.data[influent_col] * \
                                           self.data['annual_treatment_volume_10k_m3'] * 10
                                           
-        # 4. 单位能耗指标
+        # 4. Unit energy consumption indicators
         if 'annual_electricity_consumption_kwh' in self.data.columns and \
            'annual_treatment_volume_10k_m3' in self.data.columns:
             self.data['energy_per_volume'] = np.where(
@@ -80,12 +80,12 @@ class FeatureEngineer:
                 0
             )
             
-        # 5. 综合去除效率指标
+        # 5. Comprehensive removal efficiency indicators
         removal_rates = [col for col in self.data.columns if col.endswith('_removal_rate')]
         if removal_rates:
             self.data['avg_removal_rate'] = self.data[removal_rates].mean(axis=1)
             
-        logger.info(f"创建了 {len(self.data.columns) - len(pollutants) * 4} 个衍生特征")
+        logger.info(f"Created {len(self.data.columns) - len(pollutants) * 4} derived features")
         
         return self.data
         
@@ -93,37 +93,37 @@ class FeatureEngineer:
                                    categorical_cols: List[str],
                                    encoding_type: str = 'onehot') -> pd.DataFrame:
         """
-        编码类别特征
+        Encode categorical features
         
         Args:
-            categorical_cols: 类别特征列名
-            encoding_type: 编码类型 ('onehot', 'label')
+            categorical_cols: Categorical feature column names
+            encoding_type: Encoding type ('onehot', 'label')
             
         Returns:
-            pd.DataFrame: 编码后的数据
+            pd.DataFrame: Encoded data
         """
-        logger.info(f"使用 {encoding_type} 编码类别特征...")
+        logger.info(f"Encoding categorical features using {encoding_type}...")
         
         for col in categorical_cols:
             if col not in self.data.columns:
                 continue
                 
             if encoding_type == 'onehot':
-                # One-Hot编码
+                # One-Hot encoding
                 dummies = pd.get_dummies(self.data[col], prefix=col, dummy_na=True)
                 self.data = pd.concat([self.data, dummies], axis=1)
                 self.data = self.data.drop(columns=[col])
-                logger.info(f"对 {col} 进行One-Hot编码，生成 {len(dummies.columns)} 个特征")
+                logger.info(f"One-Hot encoded {col}, generated {len(dummies.columns)} features")
                 
             elif encoding_type == 'label':
-                # 标签编码
+                # Label encoding
                 le = LabelEncoder()
-                # 处理缺失值
+                # Handle missing values
                 self.data[col] = self.data[col].fillna('None')
                 self.data[col + '_encoded'] = le.fit_transform(self.data[col])
                 self.encoders[col] = le
                 self.data = self.data.drop(columns=[col])
-                logger.info(f"对 {col} 进行标签编码")
+                logger.info(f"Label encoded {col}")
                 
         return self.data
         
@@ -132,15 +132,15 @@ class FeatureEngineer:
                       method: str = 'standard',
                       exclude_cols: Optional[List[str]] = None) -> pd.DataFrame:
         """
-        特征缩放
+        Feature scaling
         
         Args:
-            numeric_cols: 数值特征列名
-            method: 缩放方法 ('standard', 'minmax')
-            exclude_cols: 不进行缩放的列
+            numeric_cols: Numeric feature column names
+            method: Scaling method ('standard', 'minmax')
+            exclude_cols: Columns to exclude from scaling
             
         Returns:
-            pd.DataFrame: 缩放后的数据
+            pd.DataFrame: Scaled data
         """
         if exclude_cols is None:
             exclude_cols = []
@@ -148,14 +148,14 @@ class FeatureEngineer:
         cols_to_scale = [col for col in numeric_cols 
                         if col in self.data.columns and col not in exclude_cols]
         
-        logger.info(f"使用 {method} 方法缩放 {len(cols_to_scale)} 个特征")
+        logger.info(f"Scaling {len(cols_to_scale)} features using {method} method")
         
         if method == 'standard':
             scaler = StandardScaler()
         elif method == 'minmax':
             scaler = MinMaxScaler()
         else:
-            raise ValueError(f"不支持的缩放方法: {method}")
+            raise ValueError(f"Unsupported scaling method: {method}")
             
         if cols_to_scale:
             self.data[cols_to_scale] = scaler.fit_transform(self.data[cols_to_scale])
@@ -168,36 +168,36 @@ class FeatureEngineer:
                        method: str = 'correlation',
                        threshold: float = 0.1) -> pd.DataFrame:
         """
-        特征选择
+        Feature selection
         
         Args:
-            target_col: 目标变量列名
-            method: 选择方法 ('correlation', 'variance')
-            threshold: 阈值
+            target_col: Target variable column name
+            method: Selection method ('correlation', 'variance')
+            threshold: Threshold value
             
         Returns:
-            pd.DataFrame: 选择后的特征
+            pd.DataFrame: Selected features
         """
-        logger.info(f"使用 {method} 方法进行特征选择...")
+        logger.info(f"Performing feature selection using {method} method...")
         
         if method == 'correlation':
-            # 基于相关性的特征选择
+            # Correlation-based feature selection
             numeric_cols = self.data.select_dtypes(include=[np.number]).columns
             correlations = self.data[numeric_cols].corrwith(self.data[target_col]).abs()
             selected_features = correlations[correlations > threshold].index.tolist()
             
-            # 确保目标变量在选择的特征中
+            # Ensure target variable is in selected features
             if target_col not in selected_features:
                 selected_features.append(target_col)
                 
-            logger.info(f"选择了 {len(selected_features)} 个相关性大于 {threshold} 的特征")
+            logger.info(f"Selected {len(selected_features)} features with correlation > {threshold}")
             
         elif method == 'variance':
-            # 基于方差的特征选择
+            # Variance-based feature selection
             numeric_cols = self.data.select_dtypes(include=[np.number]).columns
             variances = self.data[numeric_cols].var()
             selected_features = variances[variances > threshold].index.tolist()
-            logger.info(f"选择了 {len(selected_features)} 个方差大于 {threshold} 的特征")
+            logger.info(f"Selected {len(selected_features)} features with variance > {threshold}")
             
         else:
             selected_features = self.data.columns.tolist()
@@ -206,31 +206,31 @@ class FeatureEngineer:
         
     def remove_highly_correlated_features(self, threshold: float = 0.95) -> pd.DataFrame:
         """
-        移除高度相关的特征
+        Remove highly correlated features
         
         Args:
-            threshold: 相关性阈值
+            threshold: Correlation threshold
             
         Returns:
-            pd.DataFrame: 处理后的数据
+            pd.DataFrame: Processed data
         """
-        logger.info(f"移除相关性大于 {threshold} 的特征...")
+        logger.info(f"Removing features with correlation > {threshold}...")
         
-        # 计算相关矩阵
+        # Calculate correlation matrix
         numeric_cols = self.data.select_dtypes(include=[np.number]).columns
         corr_matrix = self.data[numeric_cols].corr().abs()
         
-        # 获取上三角矩阵
+        # Get upper triangle matrix
         upper_triangle = corr_matrix.where(
             np.triu(np.ones(corr_matrix.shape), k=1).astype(bool)
         )
         
-        # 找出相关性大于阈值的特征
+        # Find features with correlation above threshold
         to_drop = [column for column in upper_triangle.columns 
                   if any(upper_triangle[column] > threshold)]
         
         if to_drop:
             self.data = self.data.drop(columns=to_drop)
-            logger.info(f"移除了 {len(to_drop)} 个高度相关的特征: {to_drop}")
+            logger.info(f"Removed {len(to_drop)} highly correlated features: {to_drop}")
             
         return self.data

@@ -1,5 +1,5 @@
 """
-模型持久化模块
+Model Persistence Module
 """
 import joblib
 import json
@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ModelPersistence:
-    """模型持久化管理器"""
+    """Model Persistence Manager"""
     
     @staticmethod
     def save_model(model: Any, 
@@ -20,29 +20,29 @@ class ModelPersistence:
                   metadata: Dict = None,
                   save_format: str = 'joblib'):
         """
-        保存模型
+        Save model
         
         Args:
-            model: 要保存的模型
-            filepath: 保存路径
-            metadata: 模型元数据
-            save_format: 保存格式 ('joblib', 'pickle')
+            model: Model to save
+            filepath: Save path
+            metadata: Model metadata
+            save_format: Save format ('joblib', 'pickle')
         """
         filepath = Path(filepath)
         filepath.parent.mkdir(parents=True, exist_ok=True)
         
-        # 保存模型
+        # Save model
         if save_format == 'joblib':
             joblib.dump(model, filepath)
         elif save_format == 'pickle':
             with open(filepath, 'wb') as f:
                 pickle.dump(model, f)
         else:
-            raise ValueError(f"不支持的保存格式: {save_format}")
+            raise ValueError(f"Unsupported save format: {save_format}")
         
-        logger.info(f"模型已保存至: {filepath}")
+        logger.info(f"Model saved to: {filepath}")
         
-        # 保存元数据
+        # Save metadata
         if metadata:
             metadata['save_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             metadata['model_file'] = str(filepath)
@@ -50,43 +50,43 @@ class ModelPersistence:
             metadata_path = filepath.with_suffix('.meta.json')
             with open(metadata_path, 'w') as f:
                 json.dump(metadata, f, indent=2, default=str)
-            logger.info(f"元数据已保存至: {metadata_path}")
+            logger.info(f"Metadata saved to: {metadata_path}")
     
     @staticmethod
     def load_model(filepath: Path,
                   load_format: str = 'joblib'):
         """
-        加载模型
+        Load model
         
         Args:
-            filepath: 模型文件路径
-            load_format: 加载格式 ('joblib', 'pickle')
+            filepath: Model file path
+            load_format: Load format ('joblib', 'pickle')
             
         Returns:
-            加载的模型
+            Loaded model
         """
         filepath = Path(filepath)
         
         if not filepath.exists():
-            raise FileNotFoundError(f"模型文件不存在: {filepath}")
+            raise FileNotFoundError(f"Model file does not exist: {filepath}")
         
-        # 加载模型
+        # Load model
         if load_format == 'joblib':
             model = joblib.load(filepath)
         elif load_format == 'pickle':
             with open(filepath, 'rb') as f:
                 model = pickle.load(f)
         else:
-            raise ValueError(f"不支持的加载格式: {load_format}")
+            raise ValueError(f"Unsupported load format: {load_format}")
         
-        logger.info(f"模型已从 {filepath} 加载")
+        logger.info(f"Model loaded from {filepath}")
         
-        # 尝试加载元数据
+        # Try to load metadata
         metadata_path = filepath.with_suffix('.meta.json')
         if metadata_path.exists():
             with open(metadata_path, 'r') as f:
                 metadata = json.load(f)
-            logger.info(f"元数据已加载: {metadata}")
+            logger.info(f"Metadata loaded: {metadata}")
             return model, metadata
         
         return model

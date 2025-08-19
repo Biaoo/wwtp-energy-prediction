@@ -1,5 +1,5 @@
 """
-模型训练模块
+Model Training Module
 """
 import pandas as pd
 import numpy as np
@@ -22,24 +22,24 @@ try:
     XGBOOST_AVAILABLE = True
 except ImportError:
     XGBOOST_AVAILABLE = False
-    logger.warning("XGBoost未安装，将跳过XGBoost模型")
+    logger.warning("XGBoost not installed, skipping XGBoost model")
 
 try:
     import lightgbm as lgb
     LIGHTGBM_AVAILABLE = True
 except ImportError:
     LIGHTGBM_AVAILABLE = False
-    logger.warning("LightGBM未安装，将跳过LightGBM模型")
+    logger.warning("LightGBM not installed, skipping LightGBM model")
 
 class ModelTrainer:
-    """模型训练器"""
+    """Model Trainer"""
     
     def __init__(self, random_state: int = 42):
         """
-        初始化模型训练器
+        Initialize model trainer
         
         Args:
-            random_state: 随机种子
+            random_state: Random seed
         """
         self.random_state = random_state
         self.models = {}
@@ -53,49 +53,49 @@ class ModelTrainer:
                    test_size: float = 0.2,
                    val_size: float = 0.2) -> Tuple:
         """
-        划分数据集
+        Split dataset
         
         Args:
-            X: 特征数据
-            y: 目标变量
-            test_size: 测试集比例
-            val_size: 验证集比例（从训练集中划分）
+            X: Feature data
+            y: Target variable
+            test_size: Test set proportion
+            val_size: Validation set proportion (split from training set)
             
         Returns:
             Tuple: X_train, X_val, X_test, y_train, y_val, y_test
         """
-        # 首先划分训练集和测试集
+        # First split training and test sets
         X_temp, X_test, y_temp, y_test = train_test_split(
             X, y, test_size=test_size, random_state=self.random_state
         )
         
-        # 从训练集中划分验证集
+        # Split validation set from training set
         val_size_adjusted = val_size / (1 - test_size)
         X_train, X_val, y_train, y_val = train_test_split(
             X_temp, y_temp, test_size=val_size_adjusted, random_state=self.random_state
         )
         
-        logger.info(f"数据集划分完成:")
-        logger.info(f"  训练集: {X_train.shape}")
-        logger.info(f"  验证集: {X_val.shape}")
-        logger.info(f"  测试集: {X_test.shape}")
+        logger.info(f"Dataset split completed:")
+        logger.info(f"  Training set: {X_train.shape}")
+        logger.info(f"  Validation set: {X_val.shape}")
+        logger.info(f"  Test set: {X_test.shape}")
         
         return X_train, X_val, X_test, y_train, y_val, y_test
         
     def train_baseline_models(self, X_train, y_train, X_val, y_val) -> Dict:
         """
-        训练基准模型
+        Train baseline models
         
         Args:
-            X_train: 训练特征
-            y_train: 训练目标
-            X_val: 验证特征
-            y_val: 验证目标
+            X_train: Training features
+            y_train: Training targets
+            X_val: Validation features
+            y_val: Validation targets
             
         Returns:
-            Dict: 模型结果
+            Dict: Model results
         """
-        logger.info("训练基准模型...")
+        logger.info("Training baseline models...")
         
         baseline_models = {
             'linear_regression': LinearRegression(),
@@ -105,16 +105,16 @@ class ModelTrainer:
         }
         
         for name, model in baseline_models.items():
-            logger.info(f"训练 {name}...")
+            logger.info(f"Training {name}...")
             
-            # 训练模型
+            # Train model
             model.fit(X_train, y_train)
             
-            # 预测
+            # Predict
             y_train_pred = model.predict(X_train)
             y_val_pred = model.predict(X_val)
             
-            # 评估
+            # Evaluate
             train_metrics = self.evaluate_model(y_train, y_train_pred)
             val_metrics = self.evaluate_model(y_val, y_val_pred)
             
@@ -125,27 +125,27 @@ class ModelTrainer:
                 'model': model
             }
             
-            logger.info(f"{name} - 验证集 R²: {val_metrics['r2']:.4f}, RMSE: {val_metrics['rmse']:.2f}")
+            logger.info(f"{name} - Validation R²: {val_metrics['r2']:.4f}, RMSE: {val_metrics['rmse']:.2f}")
             
         return self.results
         
     def train_tree_models(self, X_train, y_train, X_val, y_val) -> Dict:
         """
-        训练树模型
+        Train tree models
         
         Args:
-            X_train: 训练特征
-            y_train: 训练目标
-            X_val: 验证特征
-            y_val: 验证目标
+            X_train: Training features
+            y_train: Training targets
+            X_val: Validation features
+            y_val: Validation targets
             
         Returns:
-            Dict: 模型结果
+            Dict: Model results
         """
-        logger.info("训练树模型...")
+        logger.info("Training tree models...")
         
-        # 随机森林
-        logger.info("训练随机森林...")
+        # Random Forest
+        logger.info("Training Random Forest...")
         rf_model = RandomForestRegressor(
             n_estimators=100,
             max_depth=20,
@@ -170,11 +170,11 @@ class ModelTrainer:
             }).sort_values('importance', ascending=False)
         }
         
-        logger.info(f"随机森林 - 验证集 R²: {self.results['random_forest']['val_metrics']['r2']:.4f}")
+        logger.info(f"Random Forest - Validation R²: {self.results['random_forest']['val_metrics']['r2']:.4f}")
         
         # XGBoost
         if XGBOOST_AVAILABLE:
-            logger.info("训练XGBoost...")
+            logger.info("Training XGBoost...")
             xgb_model = xgb.XGBRegressor(
                 n_estimators=100,
                 learning_rate=0.1,
@@ -198,11 +198,11 @@ class ModelTrainer:
                 }).sort_values('importance', ascending=False)
             }
             
-            logger.info(f"XGBoost - 验证集 R²: {self.results['xgboost']['val_metrics']['r2']:.4f}")
+            logger.info(f"XGBoost - Validation R²: {self.results['xgboost']['val_metrics']['r2']:.4f}")
             
         # LightGBM
         if LIGHTGBM_AVAILABLE:
-            logger.info("训练LightGBM...")
+            logger.info("Training LightGBM...")
             lgb_model = lgb.LGBMRegressor(
                 n_estimators=100,
                 learning_rate=0.1,
@@ -226,7 +226,7 @@ class ModelTrainer:
                 }).sort_values('importance', ascending=False)
             }
             
-            logger.info(f"LightGBM - 验证集 R²: {self.results['lightgbm']['val_metrics']['r2']:.4f}")
+            logger.info(f"LightGBM - Validation R²: {self.results['lightgbm']['val_metrics']['r2']:.4f}")
             
         return self.results
         
@@ -236,19 +236,19 @@ class ModelTrainer:
                             param_grid: Optional[Dict] = None,
                             cv: int = 5) -> Dict:
         """
-        超参数调优
+        Hyperparameter tuning
         
         Args:
-            X_train: 训练特征
-            y_train: 训练目标
-            model_name: 模型名称
-            param_grid: 参数网格
-            cv: 交叉验证折数
+            X_train: Training features
+            y_train: Training targets
+            model_name: Model name
+            param_grid: Parameter grid
+            cv: Cross-validation folds
             
         Returns:
-            Dict: 最佳参数和模型
+            Dict: Best parameters and model
         """
-        logger.info(f"对 {model_name} 进行超参数调优...")
+        logger.info(f"Performing hyperparameter tuning for {model_name}...")
         
         if model_name == 'random_forest':
             base_model = RandomForestRegressor(random_state=self.random_state)
@@ -278,7 +278,7 @@ class ModelTrainer:
                     'feature_fraction': [0.7, 0.9]
                 }
         else:
-            logger.warning(f"模型 {model_name} 不支持超参数调优")
+            logger.warning(f"Model {model_name} does not support hyperparameter tuning")
             return {}
             
         grid_search = GridSearchCV(
@@ -295,8 +295,8 @@ class ModelTrainer:
         self.best_params[model_name] = grid_search.best_params_
         self.models[f'{model_name}_tuned'] = grid_search.best_estimator_
         
-        logger.info(f"最佳参数: {grid_search.best_params_}")
-        logger.info(f"最佳交叉验证得分: {grid_search.best_score_:.4f}")
+        logger.info(f"Best parameters: {grid_search.best_params_}")
+        logger.info(f"Best cross-validation score: {grid_search.best_score_:.4f}")
         
         return {
             'best_params': grid_search.best_params_,
@@ -306,20 +306,20 @@ class ModelTrainer:
         
     def evaluate_model(self, y_true, y_pred) -> Dict:
         """
-        评估模型
+        Evaluate model
         
         Args:
-            y_true: 真实值
-            y_pred: 预测值
+            y_true: True values
+            y_pred: Predicted values
             
         Returns:
-            Dict: 评估指标
+            Dict: Evaluation metrics
         """
         mae = mean_absolute_error(y_true, y_pred)
         rmse = np.sqrt(mean_squared_error(y_true, y_pred))
         r2 = r2_score(y_true, y_pred)
         
-        # 计算MAPE
+        # Calculate MAPE
         mape = np.mean(np.abs((y_true - y_pred) / y_true)) * 100 if (y_true != 0).all() else np.inf
         
         return {
@@ -331,13 +331,13 @@ class ModelTrainer:
         
     def select_best_model(self, metric: str = 'r2') -> Any:
         """
-        选择最佳模型
+        Select best model
         
         Args:
-            metric: 评估指标
+            metric: Evaluation metric
             
         Returns:
-            最佳模型
+            Best model
         """
         best_score = -np.inf if metric in ['r2'] else np.inf
         best_model_name = None
@@ -356,31 +356,31 @@ class ModelTrainer:
                     
         if best_model_name:
             self.best_model = self.models[best_model_name]
-            logger.info(f"最佳模型: {best_model_name}, {metric}: {best_score:.4f}")
+            logger.info(f"Best model: {best_model_name}, {metric}: {best_score:.4f}")
             
         return self.best_model
         
     def save_model(self, model, filepath: Path):
         """
-        保存模型
+        Save model
         
         Args:
-            model: 要保存的模型
-            filepath: 保存路径
+            model: Model to save
+            filepath: Save path
         """
         joblib.dump(model, filepath)
-        logger.info(f"模型已保存至: {filepath}")
+        logger.info(f"Model saved to: {filepath}")
         
     def load_model(self, filepath: Path):
         """
-        加载模型
+        Load model
         
         Args:
-            filepath: 模型文件路径
+            filepath: Model file path
             
         Returns:
-            加载的模型
+            Loaded model
         """
         model = joblib.load(filepath)
-        logger.info(f"模型已从 {filepath} 加载")
+        logger.info(f"Model loaded from {filepath}")
         return model

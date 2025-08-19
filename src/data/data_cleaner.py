@@ -1,5 +1,5 @@
 """
-数据清洗模块
+Data cleaning module
 """
 import pandas as pd
 import numpy as np
@@ -9,44 +9,44 @@ from typing import Optional, List, Tuple
 logger = logging.getLogger(__name__)
 
 class DataCleaner:
-    """数据清洗器"""
+    """Data cleaner"""
     
     def __init__(self, data: pd.DataFrame):
         """
-        初始化数据清洗器
+        Initialize data cleaner
         
         Args:
-            data: 原始数据
+            data: Raw data
         """
         self.data = data.copy()
         
     def drop_geographic_features(self, geographic_cols: List[str]) -> pd.DataFrame:
         """
-        移除地理特征
+        Remove geographic features
         
         Args:
-            geographic_cols: 地理特征列名列表
+            geographic_cols: List of geographic feature column names
             
         Returns:
-            pd.DataFrame: 处理后的数据
+            pd.DataFrame: Processed data
         """
         cols_to_drop = [col for col in geographic_cols if col in self.data.columns]
         if cols_to_drop:
             self.data = self.data.drop(columns=cols_to_drop)
-            logger.info(f"已移除地理特征: {cols_to_drop}")
+            logger.info(f"Removed geographic features: {cols_to_drop}")
         return self.data
         
     def handle_missing_values(self, strategy: str = 'median') -> pd.DataFrame:
         """
-        处理缺失值
+        Handle missing values
         
         Args:
-            strategy: 处理策略 ('median', 'mean', 'mode', 'drop')
+            strategy: Handling strategy ('median', 'mean', 'mode', 'drop')
             
         Returns:
-            pd.DataFrame: 处理后的数据
+            pd.DataFrame: Processed data
         """
-        # 处理数值型特征
+        # Handle numeric features
         numeric_cols = self.data.select_dtypes(include=[np.number]).columns
         
         if strategy == 'median':
@@ -54,7 +54,7 @@ class DataCleaner:
                 if self.data[col].isnull().any():
                     median_value = self.data[col].median()
                     self.data[col].fillna(median_value, inplace=True)
-                    logger.info(f"用中位数 {median_value:.2f} 填充列 {col}")
+                    logger.info(f"Filled column {col} with median {median_value:.2f}")
                     
         elif strategy == 'mean':
             for col in numeric_cols:
@@ -65,47 +65,47 @@ class DataCleaner:
         elif strategy == 'drop':
             self.data = self.data.dropna()
             
-        # 处理类别型特征
+        # Handle categorical features
         categorical_cols = self.data.select_dtypes(include=['object']).columns
         for col in categorical_cols:
             if self.data[col].isnull().any():
                 self.data[col].fillna('None', inplace=True)
-                logger.info(f"用 'None' 填充类别列 {col}")
+                logger.info(f"Filled categorical column {col} with 'None'")
                 
         return self.data
         
     def handle_special_values(self) -> pd.DataFrame:
         """
-        处理特殊值（如 '<4' 等）
+        Handle special values (e.g., '<4')
         
         Returns:
-            pd.DataFrame: 处理后的数据
+            pd.DataFrame: Processed data
         """
-        # 处理 ss_effluent_mg_l 中的 '<' 符号
+        # Handle '<' symbol in ss_effluent_mg_l
         if 'ss_effluent_mg_l' in self.data.columns:
             def convert_special_value(val):
                 if isinstance(val, str):
                     if '<' in val:
-                        # 提取数字部分
+                        # Extract numeric part
                         return float(val.replace('<', ''))
                 return val
                 
             self.data['ss_effluent_mg_l'] = self.data['ss_effluent_mg_l'].apply(convert_special_value)
             self.data['ss_effluent_mg_l'] = pd.to_numeric(self.data['ss_effluent_mg_l'], errors='coerce')
-            logger.info("已处理 ss_effluent_mg_l 列中的特殊值")
+            logger.info("Processed special values in ss_effluent_mg_l column")
             
         return self.data
         
     def remove_outliers(self, method: str = 'iqr', threshold: float = 1.5) -> pd.DataFrame:
         """
-        移除异常值
+        Remove outliers
         
         Args:
-            method: 方法 ('iqr', 'zscore')
-            threshold: 阈值
+            method: Method ('iqr', 'zscore')
+            threshold: Threshold value
             
         Returns:
-            pd.DataFrame: 处理后的数据
+            pd.DataFrame: Processed data
         """
         numeric_cols = self.data.select_dtypes(include=[np.number]).columns
         initial_shape = self.data.shape[0]
@@ -120,7 +120,7 @@ class DataCleaner:
                 
                 outliers = (self.data[col] < lower_bound) | (self.data[col] > upper_bound)
                 if outliers.any():
-                    logger.info(f"列 {col} 发现 {outliers.sum()} 个异常值")
+                    logger.info(f"Found {outliers.sum()} outliers in column {col}")
                     
         elif method == 'zscore':
             from scipy import stats
@@ -128,10 +128,10 @@ class DataCleaner:
                 z_scores = np.abs(stats.zscore(self.data[col]))
                 outliers = z_scores > threshold
                 if outliers.any():
-                    logger.info(f"列 {col} 发现 {outliers.sum()} 个异常值")
+                    logger.info(f"Found {outliers.sum()} outliers in column {col}")
                     
         final_shape = self.data.shape[0]
-        logger.info(f"异常值处理完成，数据从 {initial_shape} 行变为 {final_shape} 行")
+        logger.info(f"Outlier removal complete, data changed from {initial_shape} to {final_shape} rows")
         
         return self.data
         
@@ -144,38 +144,38 @@ class DataCleaner:
                    remove_outliers: bool = False,
                    outlier_method: str = 'iqr') -> pd.DataFrame:
         """
-        完整的数据清洗流程
+        Complete data cleaning pipeline
         
         Args:
-            drop_geographic: 是否移除地理特征
-            geographic_cols: 地理特征列名
-            handle_missing: 是否处理缺失值
-            missing_strategy: 缺失值处理策略
-            handle_special: 是否处理特殊值
-            remove_outliers: 是否移除异常值
-            outlier_method: 异常值检测方法
+            drop_geographic: Whether to remove geographic features
+            geographic_cols: Geographic feature column names
+            handle_missing: Whether to handle missing values
+            missing_strategy: Missing value handling strategy
+            handle_special: Whether to handle special values
+            remove_outliers: Whether to remove outliers
+            outlier_method: Outlier detection method
             
         Returns:
-            pd.DataFrame: 清洗后的数据
+            pd.DataFrame: Cleaned data
         """
-        logger.info("开始数据清洗...")
+        logger.info("Starting data cleaning...")
         
-        # 1. 处理特殊值
+        # 1. Handle special values
         if handle_special:
             self.handle_special_values()
             
-        # 2. 移除地理特征
+        # 2. Remove geographic features
         if drop_geographic and geographic_cols:
             self.drop_geographic_features(geographic_cols)
             
-        # 3. 处理缺失值
+        # 3. Handle missing values
         if handle_missing:
             self.handle_missing_values(missing_strategy)
             
-        # 4. 移除异常值（可选）
+        # 4. Remove outliers (optional)
         if remove_outliers:
             self.remove_outliers(outlier_method)
             
-        logger.info(f"数据清洗完成，最终数据形状: {self.data.shape}")
+        logger.info(f"Data cleaning complete, final data shape: {self.data.shape}")
         
         return self.data
