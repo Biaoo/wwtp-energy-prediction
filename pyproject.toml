@@ -22,3 +22,4 @@ dependencies = [
 data-analysis = "src.data_analysis:main"
 model-train = "src.model_train:main"
 evaluate = "src.evaluate:main"
+gradio-app = "src.gradio_app:main"
