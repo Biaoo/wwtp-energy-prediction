@@ -1,10 +1,10 @@
 {
   "best_model": "random_forest",
   "test_metrics": {
-    "mae": 2609018.474526315,
-    "rmse": 4684425.429459295,
-    "r2": 0.9351767971919848,
-    "mape": 34.337618075967775
+    "mae": 2659393.0629473687,
+    "rmse": 5217834.069337452,
+    "r2": 0.9195736511145999,
+    "mape": 29.681427506016796
   },
   "feature_columns": [
     "treatment_capacity_10k_m3_per_day",
@@ -38,12 +38,36 @@
     "tn_load_kg",
     "tp_load_kg",
     "energy_per_volume",
-    "avg_removal_rate"
+    "avg_removal_rate",
+    "treatment_process_A2O_Family",
+    "treatment_process_AO_Family",
+    "treatment_process_Biofilm",
+    "treatment_process_MBR",
+    "treatment_process_Other",
+    "treatment_process_Oxidation_Ditch",
+    "treatment_process_SBR_Family",
+    "treatment_process_Unknown",
+    "treatment_process_nan",
+    "advanced_processs_Combined",
+    "advanced_processs_Filtration",
+    "advanced_processs_Membrane",
+    "advanced_processs_Other",
+    "advanced_processs_Sedimentation",
+    "advanced_processs_Unknown",
+    "advanced_processs_nan",
+    "disinfection_processs_Chlorine_Based",
+    "disinfection_processs_Combined",
+    "disinfection_processs_Other",
+    "disinfection_processs_UV",
+    "disinfection_processs_Unknown",
+    "disinfection_processs_nan"
   ],
   "target_column": "annual_electricity_consumption_kwh",
-  "n_features": 32,
+  "n_features": 54,
   "n_samples": 93,
   "train_size": 55,
   "val_size": 19,
-  "test_size": 19
+  "test_size": 19,
+  "includes_process_features": true,
+  "n_process_features": 22
 }

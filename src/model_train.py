@@ -83,26 +83,47 @@ def main():
     
     if categorical_features:
         logger.info(f"编码类别特征: {categorical_features}")
+        
+        # 替换NaN值为'Unknown'
+        for col in categorical_features:
+            data[col] = data[col].fillna('Unknown')
+        
         engineer = FeatureEngineer(data[feature_cols + [TARGET_COLUMN]])
         data_encoded = engineer.encode_categorical_features(
             categorical_features, 
             encoding_type='onehot'
         )
         
-        # 更新特征列
+        # 更新特征列 - 包含所有特征（数值和编码后的类别）
         feature_cols = [col for col in data_encoded.columns if col != TARGET_COLUMN]
         X = data_encoded[feature_cols]
         y = data_encoded[TARGET_COLUMN]
+        
+        # 保存编码器（如果有的话）
+        if hasattr(engineer, 'encoders'):
+            encoder_path = MODEL_OUTPUT_DIR / 'encoders.pkl'
+            joblib.dump(engineer.encoders, encoder_path)
+            logger.info(f"类别编码器已保存至: {encoder_path}")
     else:
         X = data[feature_cols]
         y = data[TARGET_COLUMN]
     
-    # 只选择数值型特征
-    numeric_cols = X.select_dtypes(include=[np.number]).columns
-    X = X[numeric_cols]
+    # 重要改动：不再过滤只保留数值型特征，而是保留所有特征
+    # 确保所有特征都是数值型（one-hot编码后的特征已经是数值型）
     
     logger.info(f"特征数量: {X.shape[1]}")
     logger.info(f"样本数量: {X.shape[0]}")
+    
+    # 检查是否包含工艺特征
+    process_related_cols = [col for col in X.columns if any(
+        proc in col.lower() for proc in ['process', 'a2o', 'ao_', 'sbr', 'mbr', 'oxidation', 
+                                         'biofilm', 'membrane', 'filtration', 'chlorine', 'uv']
+    )]
+    if process_related_cols:
+        logger.info(f"包含 {len(process_related_cols)} 个工艺相关特征")
+        logger.info(f"工艺特征示例: {process_related_cols[:5]}")
+    else:
+        logger.warning("警告：没有找到工艺相关特征！")
     
     # 保存特征名称
     feature_names_path = MODEL_OUTPUT_DIR / 'feature_names.json'
@@ -244,6 +265,23 @@ def main():
                 model_name=best_model_name or 'Best',
                 top_n=20
             )
+            
+            # 分析工艺特征的重要性
+            if hasattr(best_model, 'feature_importances_'):
+                feature_importance = pd.DataFrame({
+                    'feature': X.columns,
+                    'importance': best_model.feature_importances_
+                }).sort_values('importance', ascending=False)
+                
+                # 显示工艺特征的重要性
+                if process_related_cols:
+                    process_importance = feature_importance[
+                        feature_importance['feature'].isin(process_related_cols)
+                    ]
+                    if not process_importance.empty:
+                        logger.info("\n工艺特征重要性:")
+                        for _, row in process_importance.head(10).iterrows():
+                            logger.info(f"  {row['feature']}: {row['importance']:.4f}")
     
     # 10. 保存模型配置
     model_config = {
@@ -255,7 +293,9 @@ def main():
         'n_samples': X.shape[0],
         'train_size': X_train.shape[0],
         'val_size': X_val.shape[0],
-        'test_size': X_test.shape[0]
+        'test_size': X_test.shape[0],
+        'includes_process_features': len(process_related_cols) > 0 if 'process_related_cols' in locals() else False,
+        'n_process_features': len(process_related_cols) if 'process_related_cols' in locals() else 0
     }
     
     config_path = MODEL_OUTPUT_DIR / 'model_config.json'
