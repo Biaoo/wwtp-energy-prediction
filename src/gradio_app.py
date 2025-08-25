@@ -206,11 +206,15 @@ def create_interface():
                 else:
                     removal_rates[p] = 0
 
+            # Calculate unit energy consumption
+            unit_energy_consumption = prediction / (annual_treatment_volume * 10000)  # kWh/m³
+            
             # Format result
             result = f"""
 ### 预测结果
 
 **预测的年电力消耗量**: {prediction:,.2f} kWh
+**单位水处理能耗**: {unit_energy_consumption:.4f} kWh/m³
 
 #### 输入参数总结:
 - **处理规模**: {treatment_capacity:.2f} 万m³/天
@@ -404,12 +408,13 @@ def main():
         # 获取本机IP
         local_ip = get_local_ip()
         logger.info(f"Local IP: {local_ip}")
-        logger.info(f"Others can access via: http://{local_ip}:7860")
+        port = 7866
+        logger.info(f"Others can access via: http://{local_ip}:{port}")
         
         # 启动界面
         interface.launch(
             server_name="0.0.0.0",  # 允许外部访问
-            server_port=7866,
+            server_port=port,
             share=False,
             inbrowser=True,
         )
