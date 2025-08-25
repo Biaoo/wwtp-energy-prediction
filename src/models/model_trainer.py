@@ -282,7 +282,7 @@ class ModelTrainer:
             return {}
             
         grid_search = GridSearchCV(
-            base_model,
+            base_model, # type: ignore
             param_grid,
             cv=cv,
             scoring='r2',
