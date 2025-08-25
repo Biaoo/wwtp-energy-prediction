@@ -14,17 +14,18 @@ This codebase serves as the computational foundation for the research paper: **"
 
 ## Key Features
 
-### 1. High-Precision AI Models
+### 1. High-Precision AI Models with Process Features
 
-- **Random Forest Performance**: R² = 0.935, RMSE = 4.68 × 10⁶ kWh
-- **Feature Importance**: TN load (22.9%), treatment capacity (20.7%), COD load (18.3%)
-- **Energy Intensity Prediction**: 0.44 ± 0.19 kWh/m³ (regional average)
+- **Random Forest Performance**: R² = 0.920, MAPE = 29.7%, RMSE = 5.22 × 10⁶ kWh
+- **Feature Importance**: Treatment capacity (21.9%), annual volume (20.7%), TN load (19.7%), COD load (16.5%)
+- **Model Features**: 54 variables including 22 process-related features (treatment, advanced, disinfection)
+- **Energy Intensity**: 0.44 ± 0.19 kWh/m³ (regional average)
 
 ### 2. Comprehensive Dataset
 
 - **Scale**: 93 WWTPs from the Yangtze River Delta region
 - **Coverage**: Treatment capacities from 0.2 to 67.0 × 10⁴ m³/day
-- **Features**: 34 operational variables including water quality parameters and plant metrics
+- **Features**: 54 total features (34 raw + 20 engineered), including water quality and process types
 
 ### 3. Complete ML Pipeline
 
@@ -32,6 +33,13 @@ This codebase serves as the computational foundation for the research paper: **"
 - **Model Selection**: Seven algorithms with hyperparameter optimization
 - **Evaluation**: Multiple metrics (R², RMSE, MAE, MAPE) with cross-validation
 - **Visualization**: Publication-ready figures and performance comparisons
+
+### 4. Interactive Web Interface
+
+- **Gradio App**: User-friendly web interface for real-time predictions
+- **Process Selection**: Dropdown menus for treatment technologies
+- **Instant Results**: Energy consumption predictions with efficiency metrics
+- **Easy Deployment**: Single command launch (`uv run python src/gradio_app.py`)
 
 ## Citation
 
@@ -47,7 +55,7 @@ If you use this code in your research, please cite both the paper and this GitHu
   publisher = {GitHub},
   journal = {GitHub repository},
   howpublished = {\url{https://github.com/Biaoo/wwtp-energy-prediction}},
-  version = {v1.0.0}
+  version = {v2.0.0}
 }
 ```
 
@@ -133,6 +141,39 @@ This script provides:
 - `predictions.csv`: Actual vs. predicted values
 - `residual_plots.png`: Error analysis visualizations
 
+### 4. Web Interface for Predictions (Gradio)
+
+```bash
+uv run python src/gradio_app.py
+```
+
+This launches an interactive web interface for making predictions:
+
+- **URL**: `http://127.0.0.1:7860` (opens automatically)
+- **Features**:
+  - Input treatment plant operational parameters
+  - Select treatment process types (A2O, MBR, SBR, etc.)
+  - Choose advanced treatment and disinfection methods
+  - Get instant energy consumption predictions
+  - View removal efficiency calculations
+
+**Interface Components**:
+
+1. **Scale Parameters**:
+   - Treatment capacity (10⁴ m³/day)
+   - Annual treatment volume (10⁴ m³)
+
+2. **Process Selection** (dropdown menus):
+   - Main treatment process: A2O, AO, Oxidation Ditch, SBR, MBR, Biofilm
+   - Advanced treatment: Membrane, Filtration, Sedimentation
+   - Disinfection: Chlorine-based, UV, Combined
+
+3. **Water Quality Parameters**:
+   - Influent: COD, BOD₅, SS, NH₃-N, TN, TP (mg/L)
+   - Effluent: COD, BOD₅, SS, NH₃-N, TN, TP (mg/L)
+
+**Note**: Process types have minimal impact on predictions (<1% variance) as the model identifies scale and pollutant loads as primary energy drivers (78.8% importance)
+
 ## Data Description
 
 ### Dataset Overview
@@ -164,7 +205,7 @@ wwtp-energy-prediction/
 │       │   ├── feature_statistics.csv
 │       │   └── processed_data.csv
 │       ├── models/                   # Trained models and comparisons
-│       │   ├── best_model.pkl        # Random Forest (R²=0.935)
+│       │   ├── best_model.pkl        # Random Forest (R²=0.920)
 │       │   ├── model_comparison.csv
 │       │   └── feature_importance.*
 │       └── evaluation/               # Performance metrics
@@ -177,6 +218,7 @@ wwtp-energy-prediction/
 │   ├── data_analysis.py             # EDA and preprocessing
 │   ├── model_train.py                # Model training pipeline
 │   ├── evaluate.py                   # Model evaluation
+│   ├── gradio_app.py                # Web interface for predictions
 │   │
 │   ├── data/                         # Data processing modules
 │   │   ├── data_loader.py

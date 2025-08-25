@@ -4,13 +4,15 @@
 
 ### Data Collection and Preprocessing
 
-We collected operational data from 93 wastewater treatment plants (WWTPs) in the Yangtze River Delta region of China, representing diverse treatment capacities ranging from 0.2 to 67.0 × 10⁴ m³/day. The dataset comprised 34 variables including influent and effluent water quality parameters (COD, BOD₅, SS, NH₃-N, TN, TP), plant capacity, annual treatment volume, and annual electricity consumption as the target variable.
+We collected operational data from 93 wastewater treatment plants (WWTPs) in the Yangtze River Delta region of China, representing diverse treatment capacities ranging from 0.2 to 67.0 × 10⁴ m³/day. The dataset comprised 34 variables including influent and effluent water quality parameters (COD, BOD₅, SS, NH₃-N, TN, TP), plant capacity, annual treatment volume, treatment process types (primary, secondary, and disinfection), and annual electricity consumption as the target variable.
 
-Data preprocessing involved systematic handling of detection limit values (e.g., "<4" for suspended solids) by converting them to half the detection limit. No missing values were observed across all features, indicating high data quality. Geographic features (city, district) were excluded to prevent overfitting and improve model generalizability. Outlier detection using the interquartile range (IQR) method identified and retained extreme but valid observations from large-scale facilities.
+Data preprocessing involved systematic handling of detection limit values (e.g., "<4" for suspended solids) by converting them to half the detection limit. Missing values in categorical process features were replaced with "Unknown" category. Geographic features (city, district) were excluded to prevent overfitting and improve model generalizability. Categorical process features were one-hot encoded, expanding the feature space from 34 to 54 variables. Outlier detection using the interquartile range (IQR) method identified and retained extreme but valid observations from large-scale facilities.
 
 ### Feature Engineering
 
 We developed domain-specific features to capture the complex relationships between treatment processes and energy consumption. Pollutant removal metrics were calculated as both absolute differences (Δ = influent - effluent) and removal rates (η = Δ/influent × 100%). Pollutant loads were computed as the product of influent concentrations and annual treatment volume (Load = C_in × V_annual), representing the total mass of pollutants processed. The plant utilization rate was derived as the ratio of actual to design capacity (λ = V_actual/(Capacity × 365)).
+
+Process-specific features were encoded from three categorical variables: treatment process (9 categories including A2O, AO, Oxidation Ditch, SBR, MBR, Biofilm), advanced treatment (6 categories including membrane, filtration, sedimentation), and disinfection process (5 categories including chlorine-based, UV). These were transformed into 22 binary features through one-hot encoding.
 
 An integrated efficiency metric was introduced, combining multiple removal rates: η_avg = (η_COD + η_BOD + η_SS + η_NH₃-N + η_TN + η_TP)/6. Energy intensity was calculated as kWh/m³ treated water to normalize consumption across different plant scales.
 
@@ -36,15 +38,15 @@ Correlation analysis revealed strong positive relationships between energy consu
 
 ### Model Performance Comparison
 
-Among the seven models evaluated, Random Forest achieved superior performance with R² = 0.935 on the test set, followed by XGBoost (R² = 0.981 on validation but with slight overfitting). Linear models (Linear Regression, Lasso) performed poorly on validation data (R² < 0.80), confirming non-linear relationships in the system. Elastic Net showed stable performance (R² = 0.941) with minimal overfitting (overfit ratio = 1.00).
+Among the seven models evaluated, Random Forest achieved superior performance with R² = 0.920 on the test set after incorporating process features, followed by XGBoost (R² = 0.981 on validation but with slight overfitting). Linear models (Linear Regression, Lasso) performed poorly on validation data (R² < 0.80), confirming non-linear relationships in the system. Elastic Net showed stable performance (R² = 0.941) with minimal overfitting (overfit ratio = 1.00).
 
-The Random Forest model demonstrated robust generalization with RMSE = 4.68 × 10⁶ kWh and MAE = 2.61 × 10⁶ kWh. However, MAPE reached 34.3%, exceeding typical engineering tolerance (< 20%), primarily due to prediction errors in large-scale facilities. Error distribution analysis revealed Q₂₅ = 5.14 × 10⁵, Q₅₀ = 1.38 × 10⁶, and Q₇₅ = 2.52 × 10⁶ kWh, with one outlier showing residual of 1.70 × 10⁷ kWh.
+The Random Forest model with expanded feature set (54 features including 22 process-related features) demonstrated robust generalization with RMSE = 5.22 × 10⁶ kWh and MAE = 2.66 × 10⁶ kWh. Notably, MAPE improved to 29.7%, a 5 percentage point reduction from the baseline model, though still exceeding typical engineering tolerance (< 20%). The inclusion of process features particularly improved predictions for medium-scale facilities while maintaining comparable performance for large-scale plants.
 
 ### Feature Importance Analysis
 
-Feature importance analysis identified four dominant predictors accounting for 78% of model variance: TN load (22.9%), treatment capacity (20.7%), COD load (18.3%), and annual treatment volume (16.4%). This hierarchy emphasizes the primacy of nitrogen removal in energy consumption, consistent with the energy-intensive nature of nitrification-denitrification processes.
+Feature importance analysis with the expanded feature set identified four dominant predictors accounting for 78.8% of model variance: treatment capacity (21.9%), annual treatment volume (20.7%), TN load (19.7%), and COD load (16.5%). This slight reordering from the baseline model emphasizes the primacy of scale factors, while nitrogen removal remains a critical energy driver consistent with the energy-intensive nature of nitrification-denitrification processes.
 
-Secondary features included TP load (6.8%) and various effluent quality parameters (1-2% each). Interestingly, removal rates contributed minimally (< 1% each), suggesting that energy consumption is driven by absolute pollutant quantities rather than removal efficiency. The average removal rate metric showed negligible importance (0.29%), further supporting this interpretation.
+Secondary features included TP load (7.6%) and various effluent quality parameters (1-2% each). Process-related features, despite comprising 22 of the 54 total features, contributed minimally to model predictions (< 1% each), suggesting that energy consumption is primarily determined by scale and pollutant loads rather than specific treatment technologies. This finding indicates that process efficiency variations within each technology category are relatively minor compared to throughput effects.
 
 ### Model Interpretability
 
@@ -56,33 +58,33 @@ Partial dependence plots indicated interaction effects between capacity and poll
 
 ### Mechanistic Insights
 
-Our findings align with established wastewater treatment principles where biological nitrogen removal represents the most energy-intensive process. The dominance of TN load (22.9% importance) over other pollutants reflects the aerobic energy demands of nitrification (4.57 g O₂/g N) and the need for internal recirculation in denitrification. The strong correlation between pollutant loads and energy consumption (r > 0.86) validates the mass-balance approach to energy prediction.
+Our findings align with established wastewater treatment principles where scale and biological nitrogen removal represent the most energy-intensive factors. After incorporating process features, the shift in importance hierarchy (capacity 21.9%, volume 20.7%, TN load 19.7%) reveals that facility scale slightly outweighs pollutant loads in determining energy consumption. This suggests that operational complexity and infrastructure requirements scale non-linearly with plant size.
 
-The weak correlation between removal rates and energy consumption challenges conventional efficiency metrics. This suggests that WWTPs operate within narrow efficiency bands dictated by discharge standards, with energy variation primarily driven by throughput rather than treatment intensity. The high baseline energy consumption even at low loads indicates substantial fixed energy costs for maintaining biological processes and hydraulic operations.
+The minimal importance of process type features (< 1% each) indicates remarkable convergence in energy efficiency across different treatment technologies when operated at similar scales. This suggests that modern WWTPs, regardless of specific technology (A2O, SBR, MBR), achieve comparable energy performance when treating similar loads. The weak correlation between removal rates and energy consumption further supports that WWTPs operate within narrow efficiency bands dictated by discharge standards, with energy variation primarily driven by throughput rather than treatment intensity.
 
 ### Scale Effects and Operational Implications
 
-The exponential increase in energy consumption beyond 20 × 10⁴ m³/day capacity suggests diseconomies of scale in large WWTPs. This contradicts expected economies of scale and may reflect increased complexity in process control, longer hydraulic retention times, or more stringent effluent standards for major facilities. The higher prediction errors for large plants (MAPE = 34.3%) indicate additional unmeasured factors influencing energy consumption at scale.
+The exponential increase in energy consumption beyond 20 × 10⁴ m³/day capacity suggests diseconomies of scale in large WWTPs. This contradicts expected economies of scale and may reflect increased complexity in process control, longer hydraulic retention times, or more stringent effluent standards for major facilities. Despite incorporating process features, prediction errors for large plants remained high (MAPE = 29.7%), though improved from the baseline, indicating that scale-related complexity transcends simple process categorization.
 
 Energy intensity averaging 0.44 kWh/m³ (range: 0.07-1.32) falls within global benchmarks but shows substantial optimization potential. The wide range suggests opportunities for energy efficiency improvements through operational optimization, particularly in facilities with energy intensity exceeding the 75th percentile (0.52 kWh/m³).
 
 ### Model Limitations and Future Directions
 
-The current model's limitations include: (1) single-year snapshot data preventing seasonal variation analysis, (2) absence of process-specific parameters (SRT, HRT, MLSS), (3) lack of temporal dynamics in influent characteristics, and (4) limited representation of advanced treatment processes.
+The current model's limitations include: (1) single-year snapshot data preventing seasonal variation analysis, (2) low importance of process features suggesting need for more granular process-specific parameters (SRT, HRT, MLSS), (3) lack of temporal dynamics in influent characteristics, and (4) persistent high prediction errors for large-scale facilities despite feature expansion.
 
-Future research should incorporate time-series data to capture seasonal patterns and dynamic loading conditions. Integration of process-specific parameters and real-time sensor data could improve prediction accuracy, particularly for large-scale facilities. Development of separate models for different capacity ranges or treatment processes may address the heteroscedasticity observed in prediction errors.
+The minimal contribution of process features (< 1% importance each) reveals that categorical process types alone are insufficient to capture operational nuances. Future research should incorporate continuous process parameters such as actual hydraulic retention time, sludge age, and dissolved oxygen levels. Integration of time-series data could capture seasonal patterns and dynamic loading conditions. Development of hierarchical models that first classify facilities by scale before prediction may address the heteroscedasticity observed in prediction errors.
 
 ## Conclusions
 
-This study successfully developed a machine learning framework for predicting annual energy consumption in WWTPs, achieving R² = 0.935 using Random Forest algorithms. Key findings include:
+This study successfully developed a machine learning framework for predicting annual energy consumption in WWTPs, achieving R² = 0.920 using Random Forest algorithms with an expanded feature set including process characteristics. Key findings include:
 
-1. **Pollutant loads, particularly nitrogen, are primary energy drivers** - TN load alone explains 22.9% of energy consumption variance, emphasizing the energy-intensive nature of biological nitrogen removal.
+1. **Scale factors are the primary energy drivers** - Treatment capacity and annual volume together explain 42.6% of energy consumption variance, surpassing even pollutant loads in importance after incorporating process features.
 
-2. **Scale and capacity dominate over efficiency metrics** - Treatment capacity and volume account for 37% of model importance, while removal rates contribute minimally, suggesting energy optimization should focus on load management rather than marginal efficiency improvements.
+2. **Pollutant loads, particularly nitrogen, remain critical** - TN and COD loads account for 36.2% of model importance, emphasizing the energy-intensive nature of biological nutrient removal processes.
 
-3. **Non-linear relationships govern energy consumption** - The superior performance of ensemble methods over linear models confirms complex interactions between operational parameters, necessitating advanced modeling approaches for accurate predictions.
+3. **Process types have minimal direct impact** - Despite adding 22 process-related features, their individual importance remained below 1%, suggesting that energy consumption is driven more by what is treated (scale and loads) than how it is treated (specific technologies).
 
-4. **Prediction challenges increase with scale** - Higher errors in large facilities (MAPE = 34.3%) indicate additional complexity requiring enhanced feature sets or specialized models for different capacity ranges.
+4. **Prediction accuracy improved but challenges persist** - MAPE improved from 34.3% to 29.7% with feature expansion, but still exceeds engineering standards, particularly for large facilities, indicating need for more granular operational parameters.
 
 The developed model provides a valuable tool for energy benchmarking, anomaly detection, and optimization planning in WWTPs. Implementation could support carbon footprint reduction strategies and inform design decisions for new facilities. However, achieving engineering-grade predictions (MAPE < 20%) requires incorporating temporal dynamics, process-specific parameters, and potentially physics-informed machine learning approaches that embed treatment process knowledge into model architectures.
 
@@ -104,7 +106,7 @@ Citation:
   publisher = {GitHub},
   journal = {GitHub repository},
   howpublished = {\url{https://github.com/Biaoo/wwtp-energy-prediction}},
-  version = {v1.0.0}
+  version = {v2.0.0}
 }
 ```
 
